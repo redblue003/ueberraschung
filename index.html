@@ -43,10 +43,9 @@
       inset: 0;
       z-index: 100;
       pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.3s;
+      display: none;
     }
-    #confetti.active { opacity: 1; }
+    #confetti.active { display: block; }
 
     /* Success overlay */
     .success-overlay {
@@ -527,27 +526,34 @@
   function launchConfetti() {
     confettiRunning = true;
     particles = [];
+
+    // Make sure canvas matches viewport
+    cCanvas.width  = window.innerWidth;
+    cCanvas.height = window.innerHeight;
     cCanvas.classList.add('active');
 
     // Burst waves
-    spawnParticles(120);
-    setTimeout(() => spawnParticles(80), 300);
-    setTimeout(() => spawnParticles(60), 700);
-    setTimeout(() => spawnParticles(40), 1200);
+    spawnParticles(150);
+    setTimeout(() => spawnParticles(100), 250);
+    setTimeout(() => spawnParticles(80),  600);
+    setTimeout(() => spawnParticles(60),  1100);
 
     drawConfetti();
 
-    // Fade out after 4s
+    // Fade out canvas after 5s
     setTimeout(() => {
-      cCanvas.style.transition = 'opacity 1s';
-      cCanvas.style.opacity = '0';
-      setTimeout(() => {
-        confettiRunning = false;
-        particles = [];
-        cCanvas.classList.remove('active');
-        cCanvas.style.opacity = '';
-        cCanvas.style.transition = '';
-      }, 1000);
+      let op = 1;
+      const fade = setInterval(() => {
+        op -= 0.02;
+        cCanvas.style.opacity = op;
+        if (op <= 0) {
+          clearInterval(fade);
+          confettiRunning = false;
+          particles = [];
+          cCanvas.classList.remove('active');
+          cCanvas.style.opacity = '';
+        }
+      }, 30);
     }, 4000);
   }
 
@@ -562,13 +568,17 @@
 
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
-    setStatus('loading', '✦ Sende deine Auswahl ...');
 
     const datesArr = [...selected].sort();
 
+    // 🎉 Konfetti & Overlay sofort starten – nicht auf Fetch warten
+    launchConfetti();
+    document.getElementById('successOverlay').classList.add('active');
+    document.getElementById('statusMsg').className = 'status';
+
+    // Formspree im Hintergrund senden
     try {
-      // 1. Sende E-Mail an Timo via Formspree (vollautomatisch, unsichtbar)
-      const res = await fetch('https://formspree.io/f/mykaqqlv', {
+      await fetch('https://formspree.io/f/mykaqqlv', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
@@ -577,16 +587,9 @@
           Nachricht: `Lilia hat für das Überraschungs-Event abgestimmt.\n\nGewählte Daten:\n${datesArr.join('\n')}\n\n✦ Viel Spaß beim Planen, Timo!`
         })
       });
-
-      if (!res.ok) throw new Error('Formspree Fehler');
-
-      launchConfetti();
-      document.getElementById('successOverlay').classList.add('active');
-      // hide the status bar (overlay takes over)
-      document.getElementById('statusMsg').className = 'status';
     } catch (e) {
-      setStatus('error', 'Etwas ist schiefgelaufen. Bitte versuche es erneut.');
-      btn.disabled = false;
+      // Stille Fehlerbehandlung – Konfetti läuft trotzdem
+      console.error('Formspree Fehler:', e);
     }
   }
 </script>
