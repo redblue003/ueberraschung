@@ -387,48 +387,6 @@
     container.appendChild(group);
   }
 
-  // ─── ICS builder ───────────────────────────────────────────────
-  function makeICS(dates) {
-    const uid = () => Math.random().toString(36).slice(2).toUpperCase();
-    const now = new Date().toISOString().replace(/[-:.]/g,'').slice(0,15)+'Z';
-
-    function toICSDate(dateStr) {
-      const [d, m, y] = dateStr.split('.');
-      return `${y}${m}${d}`;
-    }
-
-    let events = dates.map(d => {
-      const ds = toICSDate(d);
-      const next = toICSDate(shiftDay(d));
-      return [
-        'BEGIN:VEVENT',
-        `UID:${uid()}@ueberraschung`,
-        `DTSTAMP:${now}`,
-        `DTSTART;VALUE=DATE:${ds}`,
-        `DTEND;VALUE=DATE:${next}`,
-        `SUMMARY:✨ Überraschungs-Event`,
-        `DESCRIPTION:Ein besonderer Tag – halte diesen Tag frei!`,
-        'END:VEVENT'
-      ].join('\r\n');
-    }).join('\r\n');
-
-    return [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'PRODID:-//UeberraschungsEvent//DE',
-      'CALSCALE:GREGORIAN',
-      'METHOD:PUBLISH',
-      events,
-      'END:VCALENDAR'
-    ].join('\r\n');
-  }
-
-  function shiftDay(dateStr) {
-    const [d, m, y] = dateStr.split('.').map(Number);
-    const dt = new Date(y, m - 1, d + 1);
-    return `${String(dt.getDate()).padStart(2,'0')}.${String(dt.getMonth()+1).padStart(2,'0')}.${dt.getFullYear()}`;
-  }
-
   function setStatus(type, msg) {
     const el = document.getElementById('statusMsg');
     el.className = `status show ${type}`;
@@ -457,16 +415,6 @@
       });
 
       if (!res.ok) throw new Error('Formspree Fehler');
-
-      // 2. .ics für sie herunterladen
-      const ics = makeICS(datesArr);
-      const blob = new Blob([ics], { type: 'text/calendar' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'ueberraschung.ics';
-      a.click();
-      URL.revokeObjectURL(url);
 
       setStatus('success', '✦ Danke! Deine Auswahl wurde übermittelt. Das Abenteuer kann beginnen. ✦');
     } catch (e) {
