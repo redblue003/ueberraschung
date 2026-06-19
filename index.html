@@ -37,6 +37,64 @@
       pointer-events: none;
     }
 
+    /* Confetti canvas */
+    #confetti {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #confetti.active { opacity: 1; }
+
+    /* Success overlay */
+    .success-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(10,10,15,0.92);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+    .success-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .success-overlay .big-icon {
+      font-size: 64px;
+      margin-bottom: 24px;
+      animation: popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) both;
+    }
+    .success-overlay h2 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(22px, 5vw, 36px);
+      color: var(--gold-light);
+      text-align: center;
+      margin-bottom: 14px;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+    .success-overlay p {
+      font-size: 15px;
+      color: var(--text-dim);
+      text-align: center;
+      letter-spacing: 0.05em;
+      animation: fadeUp 0.6s 0.35s ease both;
+    }
+    @keyframes popIn {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+    @keyframes fadeUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+
     .page {
       position: relative;
       z-index: 1;
@@ -287,6 +345,14 @@
 </head>
 <body>
 
+<canvas id="confetti"></canvas>
+
+<div class="success-overlay" id="successOverlay">
+  <div class="big-icon">🎉</div>
+  <h2>Das Abenteuer beginnt!</h2>
+  <p>Deine Auswahl wurde übermittelt.<br>Halte dich bereit ✦</p>
+</div>
+
 <canvas id="stars"></canvas>
 
 <div class="page">
@@ -387,6 +453,104 @@
     container.appendChild(group);
   }
 
+  // ─── Confetti ──────────────────────────────────────────────────
+  const cCanvas = document.getElementById('confetti');
+  const cCtx = cCanvas.getContext('2d');
+  let particles = [];
+  let confettiRunning = false;
+
+  const COLORS = ['#C9A84C','#E8C96B','#F5E6A3','#ffffff','#FFD700','#FFA500','#E8C96B'];
+  const SHAPES = ['rect', 'circle', 'ribbon'];
+
+  function resizeConfetti() {
+    cCanvas.width  = window.innerWidth;
+    cCanvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeConfetti);
+  resizeConfetti();
+
+  function spawnParticles(count) {
+    for (let i = 0; i < count; i++) {
+      const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+      particles.push({
+        x: Math.random() * cCanvas.width,
+        y: -10 - Math.random() * 200,
+        w: Math.random() * 10 + 5,
+        h: Math.random() * 6 + 3,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        shape,
+        rot: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.15,
+        vx: (Math.random() - 0.5) * 3,
+        vy: Math.random() * 3 + 2,
+        opacity: 1,
+        fade: Math.random() * 0.005 + 0.003
+      });
+    }
+  }
+
+  function drawConfetti() {
+    if (!confettiRunning) return;
+    cCtx.clearRect(0, 0, cCanvas.width, cCanvas.height);
+
+    particles = particles.filter(p => p.opacity > 0 && p.y < cCanvas.height + 20);
+
+    for (const p of particles) {
+      p.x  += p.vx;
+      p.y  += p.vy;
+      p.rot += p.rotSpeed;
+      p.vy += 0.05; // gravity
+      p.vx += (Math.random() - 0.5) * 0.1; // wobble
+      if (p.y > cCanvas.height * 0.6) p.opacity -= p.fade;
+
+      cCtx.save();
+      cCtx.globalAlpha = Math.max(0, p.opacity);
+      cCtx.translate(p.x, p.y);
+      cCtx.rotate(p.rot);
+      cCtx.fillStyle = p.color;
+
+      if (p.shape === 'circle') {
+        cCtx.beginPath();
+        cCtx.arc(0, 0, p.w / 2, 0, Math.PI * 2);
+        cCtx.fill();
+      } else if (p.shape === 'ribbon') {
+        cCtx.fillRect(-p.w, -p.h / 2, p.w * 2, p.h / 2);
+      } else {
+        cCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      }
+      cCtx.restore();
+    }
+
+    requestAnimationFrame(drawConfetti);
+  }
+
+  function launchConfetti() {
+    confettiRunning = true;
+    particles = [];
+    cCanvas.classList.add('active');
+
+    // Burst waves
+    spawnParticles(120);
+    setTimeout(() => spawnParticles(80), 300);
+    setTimeout(() => spawnParticles(60), 700);
+    setTimeout(() => spawnParticles(40), 1200);
+
+    drawConfetti();
+
+    // Fade out after 4s
+    setTimeout(() => {
+      cCanvas.style.transition = 'opacity 1s';
+      cCanvas.style.opacity = '0';
+      setTimeout(() => {
+        confettiRunning = false;
+        particles = [];
+        cCanvas.classList.remove('active');
+        cCanvas.style.opacity = '';
+        cCanvas.style.transition = '';
+      }, 1000);
+    }, 4000);
+  }
+
   function setStatus(type, msg) {
     const el = document.getElementById('statusMsg');
     el.className = `status show ${type}`;
@@ -416,7 +580,10 @@
 
       if (!res.ok) throw new Error('Formspree Fehler');
 
-      setStatus('success', '✦ Danke! Deine Auswahl wurde übermittelt. Das Abenteuer kann beginnen. ✦');
+      launchConfetti();
+      document.getElementById('successOverlay').classList.add('active');
+      // hide the status bar (overlay takes over)
+      document.getElementById('statusMsg').className = 'status';
     } catch (e) {
       setStatus('error', 'Etwas ist schiefgelaufen. Bitte versuche es erneut.');
       btn.disabled = false;
