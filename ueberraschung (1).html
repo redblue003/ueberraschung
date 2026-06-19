@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eine Überraschung wartet auf dich ✦</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Lato:wght@300;400&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #C9A84C;
+      --gold-light: #E8C96B;
+      --gold-dim: #7A6230;
+      --bg: #0A0A0F;
+      --surface: #12121A;
+      --surface2: #1A1A26;
+      --text: #EDE8DC;
+      --text-dim: #9A9280;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Lato', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* Stars canvas */
+    #stars {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 20px 80px;
+    }
+
+    /* Header */
+    .compass-ring {
+      width: 72px;
+      height: 72px;
+      border: 2px solid var(--gold);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      animation: rotate 20s linear infinite;
+      position: relative;
+    }
+    .compass-ring::before {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border: 1px solid var(--gold-dim);
+      border-radius: 50%;
+    }
+    .compass-icon { font-size: 28px; animation: rotate 20s linear infinite reverse; }
+    @keyframes rotate { to { transform: rotate(360deg); } }
+
+    .eyebrow {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 0.35em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(28px, 6vw, 52px);
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.15;
+      letter-spacing: 0.02em;
+      color: var(--text);
+      max-width: 600px;
+      margin-bottom: 16px;
+    }
+    h1 span { color: var(--gold); }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--text-dim);
+      text-align: center;
+      max-width: 420px;
+      line-height: 1.7;
+      margin-bottom: 52px;
+      letter-spacing: 0.03em;
+    }
+
+    /* Divider */
+    .divider {
+      width: 120px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 0 auto 48px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--gold-dim);
+      border-radius: 2px;
+      padding: 44px 40px;
+      width: 100%;
+      max-width: 560px;
+      position: relative;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 2px;
+      background: linear-gradient(135deg, rgba(201,168,76,0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* Corner ornaments */
+    .card::after {
+      content: '✦';
+      position: absolute;
+      top: 10px; right: 14px;
+      color: var(--gold-dim);
+      font-size: 12px;
+    }
+
+    .section-label {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    /* Date grid */
+    .dates-label {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .dates-hint {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 20px;
+      letter-spacing: 0.04em;
+    }
+
+    .month-group { margin-bottom: 24px; }
+    .month-title {
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      color: var(--gold-dim);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(201,168,76,0.2);
+    }
+
+    .date-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+
+    .date-pill {
+      cursor: pointer;
+      border: 1px solid var(--gold-dim);
+      background: transparent;
+      color: var(--text-dim);
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      padding: 9px 18px;
+      border-radius: 2px;
+      transition: all 0.18s ease;
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+    }
+    .date-pill::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gold);
+      opacity: 0;
+      transition: opacity 0.18s;
+    }
+    .date-pill span { position: relative; z-index: 1; }
+    .date-pill:hover {
+      border-color: var(--gold);
+      color: var(--text);
+    }
+    .date-pill.selected {
+      border-color: var(--gold);
+      color: var(--bg);
+    }
+    .date-pill.selected::before { opacity: 1; }
+
+    /* Submit */
+    .submit-wrap { margin-top: 36px; }
+    .btn-submit {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      padding: 16px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-submit::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.22s ease;
+    }
+    .btn-submit span { position: relative; z-index: 1; }
+    .btn-submit:hover::before { transform: scaleX(1); }
+    .btn-submit:hover span { color: var(--bg); }
+    .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-submit:disabled::before { display: none; }
+
+    /* Status messages */
+    .status {
+      margin-top: 20px;
+      padding: 14px 20px;
+      border-radius: 2px;
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      text-align: center;
+      display: none;
+    }
+    .status.show { display: block; }
+    .status.success {
+      background: rgba(201,168,76,0.1);
+      border: 1px solid var(--gold-dim);
+      color: var(--gold-light);
+    }
+    .status.error {
+      background: rgba(200,60,60,0.1);
+      border: 1px solid rgba(200,60,60,0.4);
+      color: #E88;
+    }
+    .status.loading {
+      background: var(--surface2);
+      border: 1px solid var(--gold-dim);
+      color: var(--text-dim);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 48px;
+      font-size: 11px;
+      color: var(--gold-dim);
+      letter-spacing: 0.2em;
+      text-align: center;
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 28px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<div class="page">
+  <div class="compass-ring"><span class="compass-icon">✦</span></div>
+  <p class="eyebrow">Eine Einladung für dich</p>
+  <h1>Eine <span>Überraschung</span><br>wartet auf dich</h1>
+  <p class="subtitle">
+    Ich habe etwas Besonderes geplant – nur für dich.<br>
+    Wähle die Daten, die dir passen, und lass dich überraschen.
+  </p>
+  <div class="divider"></div>
+
+  <div class="card">
+    <div class="dates-label">Wähle deine Wunschdaten</div>
+    <p class="dates-hint">Mehrfachauswahl möglich ✦</p>
+
+    <div id="dateContainer"></div>
+
+    <div class="submit-wrap">
+      <button class="btn-submit" id="submitBtn" onclick="handleSubmit()">
+        <span>✦ &nbsp; Abstimmen &nbsp; ✦</span>
+      </button>
+      <div class="status" id="statusMsg"></div>
+    </div>
+  </div>
+
+  <p class="footer">✦ &nbsp; Das Abenteuer beginnt bald &nbsp; ✦</p>
+</div>
+
+<script>
+  // ─── Star canvas ───────────────────────────────────────────────
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  function initStars() {
+    stars = Array.from({length: 120}, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.2 + 0.2,
+      a: Math.random(),
+      speed: Math.random() * 0.005 + 0.002,
+      dir: Math.random() > 0.5 ? 1 : -1
+    }));
+  }
+  function drawStars() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const s of stars) {
+      s.a += s.speed * s.dir;
+      if (s.a > 1 || s.a < 0.1) s.dir *= -1;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(201,168,76,${s.a * 0.6})`;
+      ctx.fill();
+    }
+    requestAnimationFrame(drawStars);
+  }
+  window.addEventListener('resize', () => { resize(); initStars(); });
+  resize(); initStars(); drawStars();
+
+  // ─── Dates ─────────────────────────────────────────────────────
+  const DATES = {
+    "Juli 2026":     ["26.07.2026"],
+    "August 2026":   ["29.08.2026", "30.08.2026"],
+    "September 2026":["26.09.2026", "27.09.2026"],
+    "Oktober 2026":  ["17.10.2026", "24.10.2026", "31.10.2026"],
+    "November 2026": ["21.11.2026", "28.11.2026"]
+  };
+
+  const selected = new Set();
+  const container = document.getElementById('dateContainer');
+
+  for (const [month, dates] of Object.entries(DATES)) {
+    const group = document.createElement('div');
+    group.className = 'month-group';
+    group.innerHTML = `<div class="month-title">${month}</div><div class="date-pills"></div>`;
+    const pills = group.querySelector('.date-pills');
+    for (const date of dates) {
+      const btn = document.createElement('button');
+      btn.className = 'date-pill';
+      btn.dataset.date = date;
+      btn.innerHTML = `<span>${date}</span>`;
+      btn.addEventListener('click', () => {
+        if (selected.has(date)) {
+          selected.delete(date);
+          btn.classList.remove('selected');
+        } else {
+          selected.add(date);
+          btn.classList.add('selected');
+        }
+      });
+      pills.appendChild(btn);
+    }
+    container.appendChild(group);
+  }
+
+  // ─── ICS builder ───────────────────────────────────────────────
+  function makeICS(dates) {
+    const uid = () => Math.random().toString(36).slice(2).toUpperCase();
+    const now = new Date().toISOString().replace(/[-:.]/g,'').slice(0,15)+'Z';
+
+    function toICSDate(dateStr) {
+      const [d, m, y] = dateStr.split('.');
+      return `${y}${m}${d}`;
+    }
+
+    let events = dates.map(d => {
+      const ds = toICSDate(d);
+      const next = toICSDate(shiftDay(d));
+      return [
+        'BEGIN:VEVENT',
+        `UID:${uid()}@ueberraschung`,
+        `DTSTAMP:${now}`,
+        `DTSTART;VALUE=DATE:${ds}`,
+        `DTEND;VALUE=DATE:${next}`,
+        `SUMMARY:✨ Überraschungs-Event`,
+        `DESCRIPTION:Ein besonderer Tag – halte diesen Tag frei!`,
+        'END:VEVENT'
+      ].join('\r\n');
+    }).join('\r\n');
+
+    return [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//UeberraschungsEvent//DE',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      events,
+      'END:VCALENDAR'
+    ].join('\r\n');
+  }
+
+  function shiftDay(dateStr) {
+    const [d, m, y] = dateStr.split('.').map(Number);
+    const dt = new Date(y, m - 1, d + 1);
+    return `${String(dt.getDate()).padStart(2,'0')}.${String(dt.getMonth()+1).padStart(2,'0')}.${dt.getFullYear()}`;
+  }
+
+  function setStatus(type, msg) {
+    const el = document.getElementById('statusMsg');
+    el.className = `status show ${type}`;
+    el.textContent = msg;
+  }
+
+  async function handleSubmit() {
+    if (selected.size === 0) return setStatus('error', 'Bitte wähle mindestens ein Datum aus.');
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    setStatus('loading', '✦ Sende deine Auswahl ...');
+
+    const datesArr = [...selected].sort();
+
+    try {
+      // 1. Sende E-Mail an Timo via Formspree (vollautomatisch, unsichtbar)
+      const res = await fetch('https://formspree.io/f/mykaqqlv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          _subject: '✦ Lilia hat abgestimmt!',
+          Gewählte_Daten: datesArr.join(', '),
+          Nachricht: `Lilia hat für das Überraschungs-Event abgestimmt.\n\nGewählte Daten:\n${datesArr.join('\n')}\n\n✦ Viel Spaß beim Planen, Timo!`
+        })
+      });
+
+      if (!res.ok) throw new Error('Formspree Fehler');
+
+      // 2. .ics für sie herunterladen
+      const ics = makeICS(datesArr);
+      const blob = new Blob([ics], { type: 'text/calendar' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ueberraschung.ics';
+      a.click();
+      URL.revokeObjectURL(url);
+
+      setStatus('success', '✦ Danke! Deine Auswahl wurde übermittelt. Das Abenteuer kann beginnen. ✦');
+    } catch (e) {
+      setStatus('error', 'Etwas ist schiefgelaufen. Bitte versuche es erneut.');
+      btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>
